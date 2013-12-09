@@ -79,6 +79,7 @@ namespace Server
         private static int NumConnections = 0;
         private String Nickname;
         private Boolean isLogged = false;
+        private Boolean isDisposed = false;
         private Message MsgToSent = new Message();
 
 
@@ -143,25 +144,28 @@ namespace Server
             }
             catch
             {
-
                 Dispose();
             }
         }
 
         public void Dispose()
         {
-            if (isLogged)
+            if (!isDisposed)
             {
-                Server.DeregisterUser(Nickname);
-                MsgToSent.strMessage = Server.AdminNickname + ": " + Nickname + " just left us :(";
-                Server.SendMessageToAll(null, MsgToSent);
-            }
+                isDisposed = true;
+                if (isLogged)
+                {
+                    Server.DeregisterUser(Nickname);
+                    MsgToSent.strMessage = Server.AdminNickname + ": " + Nickname + " just left us :(";
+                    Server.SendMessageToAll(null, MsgToSent);
+                }
 
-            Stream.Close();
-            Client.Close();
-            NumConnections--;
-            Console.WriteLine("{0} active connections", NumConnections.ToString());
-            Thread.CurrentThread.Abort();
+                Stream.Close();
+                Client.Close();
+                NumConnections--;
+                Console.WriteLine("{0} active connections", NumConnections.ToString());
+                Thread.CurrentThread.Abort();
+            }
         }
 
     }
